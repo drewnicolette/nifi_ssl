@@ -1,0 +1,72 @@
+- name: Patch the server
+  shell: "yum -y update"
+
+- name: Install Java
+  shell: "yum install java-1.8.0-openjdk-devel -y"
+
+- name: Install WGET
+  shell: "yum install wget -y"
+
+- name: Create File for host entries
+  file:
+    path: "/usr/sbin/hosts.sh"
+    state: touch
+    mode: '0777'
+
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /usr/sbin/hosts.sh
+    regexp: '.*{{ item }}$'
+    line: echo "{{ hostvars[item].internal_ip }} {{ item }}" >> /etc/hosts.latest
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.all }}"
+
+- name: Insert line in beginning of hosts file
+  lineinfile:
+    dest: /usr/sbin/hosts.sh
+    insertbefore: BOF
+    line: echo '127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4' > /etc/hosts.latest
+    state: present
+
+- name: Insert Line - Backing up old hosts file
+  lineinfile:
+    dest: /usr/sbin/hosts.sh
+    line: mv /etc/hosts /etc/hosts.old
+    state: present
+
+- name: Insert Line - Replacing with new hosts file
+  lineinfile:
+    dest: /usr/sbin/hosts.sh
+    line: mv /etc/hosts.latest /etc/hosts
+    state: present
+
+- name: Change Permissions on rc.local
+  file:
+    path: /etc/rc.local
+    state: file
+    mode: '0777'
+
+- name: Insert Line - Changing Hostname on Restart
+  lineinfile:
+    dest: /etc/rc.local
+    line: "hostname {{ inventory_hostname }}"
+    state: present
+
+- name: Insert Line - Changing Hosts File
+  lineinfile:
+    dest: /etc/rc.local
+    line: sudo sh /usr/sbin/hosts.sh
+    state: present
+
+- name: Rebooting the server
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for_connection:
+    connect_timeout: 10
+    sleep: 5
+    delay: 5
+    timeout: 300

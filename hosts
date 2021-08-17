@@ -1,0 +1,10 @@
+[all]
+nifi1.cdf-east.local ansible_host=10.142.0.2 internal_ip=10.142.0.2 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181
+nifi2.cdf-east.local ansible_host=10.142.0.3 internal_ip=10.142.0.3 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181
+nifi3.cdf-east.local ansible_host=10.142.0.4 internal_ip=10.142.0.4 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181
+ipa.cdf-east.local ansible_host=10.128.0.20 internal_ip=10.128.0.20
+
+[nifi]
+nifi1.cdf-east.local ansible_host=34.75.121.230 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181
+nifi2.cdf-east.local ansible_host=34.138.193.102 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181
+nifi3.cdf-east.local ansible_host=34.74.216.248 ansible_user=anicolette ZOOKEEPER=nifi1.cdf-east.local:2181,nifi2.cdf-east.local:2181,nifi3.cdf-east.local:2181

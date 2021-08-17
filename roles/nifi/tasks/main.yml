@@ -1,0 +1,5 @@
+- name: Install/Setup Dependencies
+  include: ./install_dependencies.yml
+
+- name: Setup NiFi
+  include: ./nifi_setup.yml

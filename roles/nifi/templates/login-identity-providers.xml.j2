@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loginIdentityProviders>
+    <provider>
+        <identifier>ldap-provider</identifier>
+        <class>org.apache.nifi.ldap.LdapProvider</class>
+        <property name="Authentication Strategy">SIMPLE</property>
+
+        <property name="Manager DN">{{ manager_dn }}</property>
+        <property name="Manager Password">{{ manager_dn_password }}</property>
+
+        <property name="Referral Strategy">FOLLOW</property>
+        <property name="Connect Timeout">10 secs</property>
+        <property name="Read Timeout">10 secs</property>
+
+        <property name="Url">{{ ldap_url }}</property>
+        <property name="User Search Base">{{ user_search_base }}</property>
+        <property name="User Search Filter">{{ user_search_filter }}</property>
+
+        <property name="Identity Strategy">USE_USERNAME</property>
+        <property name="Authentication Expiration">12 hours</property>
+    </provider>
+</loginIdentityProviders>

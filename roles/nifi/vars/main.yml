@@ -1,0 +1,20 @@
+# NiFi General Properties
+destination_path: /opt
+nifi_version: 1.14.0
+nifi_url: https://downloads.apache.org/nifi/1.14.0/nifi-1.14.0-bin.tar.gz
+nifi_home: "{{destination_path}}/nifi-{{nifi_version}}"
+
+#SSL Properities
+keystore_type: PKCS12
+truststore_file_name: truststore.jks
+truststore_type: JKS
+
+#Login Identity Providers File Variables
+manager_dn: uid=hadoop_ldap,cn=users,cn=accounts,dc=cdf-east,dc=local
+ldap_url: ldap://ipa.cdf-east.local:389
+user_search_base: cn=users,cn=accounts,dc=cdf-east,dc=local
+user_search_filter: uid={0}
+
+# Authorizers File Variables
+ldap_admin_user: admin
+realm: O=CDF-EAST.LOCAL, C=US

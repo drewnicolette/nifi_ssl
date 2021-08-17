@@ -1,0 +1,112 @@
+- name: Patch the server
+  shell: "yum -y update"
+
+- name: Install Java
+  shell: "yum install java-1.8.0-openjdk-devel -y"
+
+- name: Install WGET
+  shell: "yum install wget -y"
+
+- name: Check NiFi Package Exists
+  stat:
+    path: "{{ destination_path }}/nifi-{{ nifi_version }}-bin.tar.gz"
+  register: stat_result
+
+- name: Download NiFi package
+  get_url:
+    url: "{{ nifi_url }}"
+    dest: "{{ destination_path }}"
+    mode: '0755'
+  when: not stat_result.stat.exists
+
+- name: Unarchive NiFi Tarball
+  unarchive:
+    src: "{{ destination_path }}/nifi-{{ nifi_version }}-bin.tar.gz"
+    dest: "{{ destination_path }}"
+    remote_src: yes
+
+- name: Copy P12 Keystore to Remote Server
+  copy:
+    src: "./certificates/{{ inventory_hostname }}_keystore.p12"
+    dest: "{{ nifi_home }}/conf"
+    mode: '0755'
+  when: keystore_type == "PKCS12"
+
+- name: Copy JKS Keystore to Remote Server
+  copy:
+    src: "./certificates/{{ inventory_hostname }}_keystore.jks"
+    dest: "{{ nifi_home }}/conf"
+    mode: '0755'
+  when: keystore_type == "JKS"
+
+- name: Copy Truststore to Remote Server
+  copy:
+    src: "./certificates/{{ truststore_file_name }}"
+    dest: "{{ nifi_home }}/conf"
+    mode: '0755'
+
+- name: Create Zookeper state dir
+  file:
+    path: "{{ nifi_home }}/state/zookeeper"
+    state: directory
+
+- name: Create Zookeper state file
+  file:
+    path: "{{ nifi_home }}/state/zookeeper/myid"
+    state: touch
+    mode: '0777'
+
+- name: Add ID to myid file
+  shell: "hostname | tr -d [:alpha:] | cut -c1 > {{ nifi_home }}/state/zookeeper/myid"
+
+- name: "Update /etc/hosts file with proper entry"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /tmp/hi.txt
+    line: "hostname {{ inventory_hostname }}"
+
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /tmp/hi.txt
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_host }} {{item}}"
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.all }}"
+
+- name: Configure NiFi Authorizers File for HTTPS
+  template:
+    src: authorizers.xml.j2
+    dest: "{{ nifi_home }}/conf/authorizers.xml"
+    mode: '0755'
+
+- name: Configure NiFi Identity File for HTTPS
+  template:
+    src: login-identity-providers.xml.j2
+    dest: "{{ nifi_home }}/conf/login-identity-providers.xml"
+    mode: '0755'
+
+- name: Configure NiFi Properties File for HTTPS
+  template:
+    src: nifi.properties.j2
+    dest: "{{ nifi_home }}/conf/nifi.properties"
+    mode: '0755'
+
+- name: Configure Zookeeper Properties File for HTTPS
+  template:
+    src: zookeeper.properties.j2
+    dest: "{{ nifi_home }}/conf/zookeeper.properties"
+    mode: '0755'
+
+#- name: Reboot the server
+#  shell: "sleep 5 && reboot"
+#  async: 1
+#  poll: 0
+    
+#- name: Wait for the reboot to complete if there was a change.
+#  wait_for_connection:
+#    connect_timeout: 10
+#    sleep: 5
+#    delay: 5
+#    timeout: 300
